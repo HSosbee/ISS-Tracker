@@ -134,14 +134,14 @@ def location_string(inputDict: dict) -> str:
     Returns:
         lcoationString (String): A string containing the latitude, longitude, altitude, and location of the given epoch
     """
-    x = dataImportant['X']['#text']
-    y = dataImportant['Y']['#text']
-    z = dataImportant['Z']['#text']
+    x = float(inputDict['X']['#text'])
+    y = float(inputDict['Y']['#text'])
+    z = float(inputDict['Z']['#text'])
     lat = latitude(x, y, z)
     alt = altitude(x, y, z)
-    lon = longitude(x, y, z, dataImportant['EPOCH'])
+    lon = longitude(x, y, z, inputDict['EPOCH'])
     location = get_location(lat,lon)
-    locationString = f"Latitude: {lat}\nLongitude: {lon}\nAltitude: {alt}\nGeolocation: {location}"
+    locationString = f"Latitude: {lat}\nLongitude: {lon}\nAltitude: {alt}\nGeolocation: {location}\n"
     return locationString
 
 @app.route('/comment', methods=['GET'])
@@ -204,8 +204,6 @@ def specific_epoch(epoch):
         data = xmltodict.parse(response.text)
     else:
         logging.critical(f'FAILURE TO GET DATA FROM https - error code {code}')
-    if not epoch.isnumeric():
-        return "Error: epoch must be an integer\n"
     try:
         dataImportant = data['ndm']['oem']['body']['segment']['data']['stateVector'][epoch]
     except IndexError:
@@ -222,8 +220,6 @@ def specific_epoch_speed(epoch):
         data = xmltodict.parse(response.text)
     else:
         logging.critical(f'FAILURE TO GET DATA FROM https - error code {code}')
-    if not epoch.isnumeric():
-        return "Error: epoch must be an integer\n"
     try:
         dataImportant = data['ndm']['oem']['body']['segment']['data']['stateVector'][epoch]
     except IndexError:
@@ -243,8 +239,6 @@ def specific_location(epoch):
         data = xmltodict.parse(response.text)
     else:
         logging.critical(f'FAILURE TO GET DATA FROM https - error code {code}')
-    if not epoch.isnumeric():
-        return "Error: epoch must be an integer\n"
     try:
         dataImportant = data['ndm']['oem']['body']['segment']['data']['stateVector'][epoch]
     except IndexError:
