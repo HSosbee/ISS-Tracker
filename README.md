@@ -4,27 +4,33 @@
 This code creates a docker container, which then runs a flask app that can be used to get various information from the public International Space Station tracking data. This repository contains a Dockerfile for building the image, iss_tracker.py which is the bulk of the code, test_iss_tracker.py which is used to test iss_tracker.py, and a diagram of the software/repository. Using this repository you can get an easily deployable code which can be connected to over the internet, and which will only return up to date information at the time of running.
 
 ## Instructions
-Download this repository, then after logging into docker using "docker login" run the following lines:
+Download this repository, then after logging into docker using "docker login" run the following line:
 
-docker build -t username/iss-tracker-flask:1.0 .
-
-docker run --name "iss-tracker-app" -d -p 5000:5000 username/iss-tracker-flask:1.0
+docker-compose up -d
 
 Now that the code is running, you can call it using the following formats:
-1. curl localhost:5000/epochs
-2. curl 'localhost:5000/epochs?limit=int&offset=int'
-3. curl localhost:5000/epochs/\<epoch>
-4. curl localhost:5000/epochs/\<epoch>/speed
-5. curl localhost:5000/now
+1. curl localhost:5000/comment
+2. curl localhost:5000/header
+3. curl localhost:5000/metadata
+4. curl localhost:5000/epochs
+5. curl 'localhost:5000/epochs?limit=int&offset=int'
+6. curl localhost:5000/epochs/\<epoch>
+7. curl localhost:5000/epochs/\<epoch>/speed
+8. curl localhost:5000/epochs/\<epoch>/location
+9. curl localhost:5000/now
 
 ## Explanations
 Note that all returns are Strings
 
-1. Returns entire json file
-2. Returns just a segment of the json starting at offset and of length limit
-3. Returns the \<epoch>'th epoch from the original file
-4. Returns the instantaneous speed of the \<epoch>'th epoch
-5. Returns the state vectors and instantaneous speed of the epoch closest to now
+1. Returns just the comment section at the top of the json file
+2. Returns the header of the data from the jsonfile
+3. Returns the metadata section of the json file
+4. Returns entire json file
+5. Returns just a segment of the json starting at offset and of length limit
+6. Returns the \<epoch>'th epoch from the original file
+7. Returns the instantaneous speed of the \<epoch>'th epoch
+8. Returns the latitude, longitude, altitude, and geoposition of the \<epoch>'th epoch
+9. Returns the latitude, longitude, altitude, and geoposition of the epoch closest to now
 
 ## Imports
 - argparse
@@ -34,6 +40,7 @@ Note that all returns are Strings
 - socket
 - datetime
 - Flask
+- geopy
 
 ## Sample Output
 
