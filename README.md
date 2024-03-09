@@ -1,7 +1,7 @@
 # Easily Deployed ISS Tracker Flask App
 
 ## Overview
-This code creates a docker container, which then runs a flask app that can be used to get various information from the public International Space Station tracking data. This repository contains a Dockerfile for building the image, iss_tracker.py which is the bulk of the code, test_iss_tracker.py which is used to test iss_tracker.py, and a diagram of the software/repository. Using this repository you can get an easily deployable code which can be connected to over the internet, and which will only return up to date information at the time of running.
+This code creates a docker container, which then runs a flask app that can be used to get various information from the public International Space Station tracking data. This repository contains a Dockerfile, docker-compose.yaml, and requirements.txt file for building the image, iss_tracker.py which is the bulk of the code, test_iss_tracker.py which is used to test iss_tracker.py, and a diagram of the software/repository. Using this repository you can get an easily deployable code which can be connected to over the internet, and which will only return up to date information at the time of running.
 
 ## Instructions
 Download this repository, then after logging into docker using "docker login" run the following line:
@@ -18,6 +18,10 @@ Now that the code is running, you can call it using the following formats:
 7. curl localhost:5000/epochs/\<epoch>/speed
 8. curl localhost:5000/epochs/\<epoch>/location
 9. curl localhost:5000/now
+
+When finished, run the following line to stop the service:
+
+docker-compose down
 
 ## Explanations
 Note that all returns are Strings
@@ -327,5 +331,4 @@ After the header, ISS state vectors in the Mean of J2000 (J2K) reference frame a
 ## Citations
 - ISS Tracking Data can be found at https://spotthestation.nasa.gov/trajectory_data.cfm
 - reading requests into xml file assisted by chatGPT
-- README formating from chatGPT
-- find_closest_time_index from chatGPT
+- datetime and geopy usage assisted by chatGPT
