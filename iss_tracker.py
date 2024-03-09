@@ -228,7 +228,7 @@ def specific_epoch_speed(epoch):
     ySpeedSquared = float(dataImportant['Y_DOT']['#text'])**2
     zSpeedSquared = float(dataImportant['Z_DOT']['#text'])**2
     dataToReturn = str((xSpeedSquared + ySpeedSquared + zSpeedSquared)**0.5)
-    StringToReturn = f"Speed at this instance: {dataToReturn}"
+    StringToReturn = f"Speed at this instance: {dataToReturn}\n"
     return StringToReturn;
 
 @app.route('/epochs/<int:epoch>/location', methods=['GET'])
