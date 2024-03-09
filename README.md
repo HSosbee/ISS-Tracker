@@ -312,6 +312,8 @@ Speed at this instance: 7.6530359018080825
 
 curl localhost:5000/epochs/20/location
 
+(note that if the Geolocation: Location not found line occurs that likely means that the ISS is over the ocean, or a similar region that does not have an address)
+
 
 Latitude: -28.74208476891908
 Longitude: -61.56298146402443
