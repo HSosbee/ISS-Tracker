@@ -44,9 +44,77 @@ Note that all returns are Strings
 
 ## Sample Output
 
-(Note that all of these outputs will change depending on the time the code is ran and if the NASA database has been updated)
+(Note that many of these outputs will change depending on the time the code is ran and if the NASA database has been updated)
 
-1.  curl localhost:5000/epochs
+1.
+
+curl localhost:5000/comment
+
+
+[
+  "Units are in kg and m^2",
+  "MASS=471702.00",
+  "DRAG_AREA=1487.80",
+  "DRAG_COEFF=2.00",
+  "SOLAR_RAD_AREA=0.00",
+  "SOLAR_RAD_COEFF=0.00",
+  "Orbits start at the ascending node epoch",
+  "ISS first asc. node: EPOCH = 2024-03-08T12:23:51.689 $ ORBIT = 293 $ LAN(DEG) = 101.66397",
+  "ISS last asc. node : EPOCH = 2024-03-23T11:31:42.924 $ ORBIT = 525 $ LAN(DEG) = 25.88236",
+  "Begin sequence of events",
+  "TRAJECTORY EVENT SUMMARY:",
+  null,
+  "|       EVENT        |       TIG        | ORB |   DV    |   HA    |   HP    |",
+  "|                    |       GMT        |     |   M/S   |   KM    |   KM    |",
+  "|                    |                  |     |  (F/S)  |  (NM)   |  (NM)   |",
+  "=============================================================================",
+  "Crew-7 Undock         071:15:00:00.000             0.0     423.8     410.1",
+  "(0.0)   (228.8)   (221.4)",
+  null,
+  "GMT074 Reboost Preli  074:13:11:00.000             1.6     424.3     409.2",
+  "(5.2)   (229.1)   (220.9)",
+  null,
+  "71S Docking           081:16:39:49.000             0.0     425.0     412.6",
+  "(0.0)   (229.5)   (222.8)",
+  null,
+  "SpX-30 Launch         081:20:54:00.000             0.0     425.0     412.7",
+  "(0.0)   (229.5)   (222.8)",
+  null,
+  "SpX-30 Docking        083:11:00:00.000             0.0     425.2     412.0",
+  "(0.0)   (229.6)   (222.5)",
+  null,
+  "=============================================================================",
+  "End sequence of events"
+]
+
+2.
+
+curl localhost:5000/header
+
+
+{
+  "CREATION_DATE": "2024-068T18:36:27.254Z",
+  "ORIGINATOR": "JSC"
+}
+
+3.
+
+curl localhost:5000/metadata
+
+
+{
+  "CENTER_NAME": "EARTH",
+  "OBJECT_ID": "1998-067-A",
+  "OBJECT_NAME": "ISS",
+  "REF_FRAME": "EME2000",
+  "START_TIME": "2024-068T12:00:00.000Z",
+  "STOP_TIME": "2024-083T12:00:00.000Z",
+  "TIME_SYSTEM": "UTC"
+}
+
+4.
+
+curl localhost:5000/epochs
 
 
 [
@@ -107,7 +175,9 @@ Note that all returns are Strings
    ...
 ]
 
-2.  curl 'localhost:5000/epochs?limit=3&offset=2'
+5.
+
+curl 'localhost:5000/epochs?limit=3&offset=2'
 
 
 [
@@ -194,7 +264,7 @@ Note that all returns are Strings
   }
 ]
 
-3. 
+6. 
 
 (Note that this output should be the same as the first epoch in the previous call)
 
@@ -228,20 +298,27 @@ curl localhost:5000/epochs/2
   }
 }
 
-4.
+7.
 
-curl localhost:5000/epochs/2/speed
+curl localhost:5000/epochs/20/speed
 
-Speed at this instance: 7.652681586991391
+Speed at this instance: 7.6530359018080825
 
-5.
+8. 
+
+curl localhost:5000/epochs/20/location
+
+
+Latitude: -28.74208476891908
+Longitude: -61.56298146402443
+Altitude: 430.6627799207736
+Geolocation: Municipio de Villa Minetti, Departamento 9 de Julio, Santa Fe, Argentina
+
+9.
 
 curl localhost:5000/now
 
-Speed at this instance: 7.656077768147414
-X Velocity: -1.09017972522795
-Y Velocity: 5.74223356545237
-Z Velocity: -4.94507721258376
+(format will  be identical to the 8th method, just different values)
 
 ## Information on the ISS Tracking Data from their website
 
