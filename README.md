@@ -1,4 +1,4 @@
-# Homework05 - ISS Tracker Flask App
+# Easily Deployed ISS Tracker Flask App
 
 ## Overview
 This code creates a docker container, which then runs a flask app that can be used to get various information from the public International Space Station tracking data. This repository contains a Dockerfile for building the image, iss_tracker.py which is the bulk of the code, test_iss_tracker.py which is used to test iss_tracker.py, and a diagram of the software/repository. Using this repository you can get an easily deployable code which can be connected to over the internet, and which will only return up to date information at the time of running.
@@ -23,7 +23,7 @@ Now that the code is running, you can call it using the following formats:
 Note that all returns are Strings
 
 1. Returns just the comment section at the top of the json file
-2. Returns the header of the data from the jsonfile
+2. Returns the header of the data from the json file
 3. Returns the metadata section of the json file
 4. Returns entire json file
 5. Returns just a segment of the json starting at offset and of length limit
