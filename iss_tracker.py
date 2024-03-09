@@ -6,8 +6,10 @@ import requests
 import xmltodict
 import logging
 import socket
+import math
 from datetime import datetime, timedelta
 from typing import List
+from geopy.geocoders import Nominatim
 
 app = Flask(__name__)
 
@@ -45,13 +47,112 @@ def find_closest_time_index(inputList: List[dict], keyword:str) -> int:
         min_difference_index (int): The index of the dictionary which contains the time closest to "now"
 
     """
-
     current_time = datetime.utcnow()
     time_objects = [datetime.strptime(item[keyword], "%Y-%jT%H:%M:%S.%fZ") for item in inputList]
     time_differences = [abs(current_time - time_obj) for time_obj in time_objects]
     min_difference_index = time_differences.index(min(time_differences))
     return min_difference_index
 
+def latitude(x: float,y: float, z: float) -> float:
+    """
+    Converts X, Y, and Z coordinates into the appropriate Latitude
+
+    Args:
+        x (float): X-Coordinate in Mean of J2000 reference frame (km)
+        y (float): Y-Coordinate in Mean of J2000 reference frame (km)
+        z (float): Z-Coordinate in Mean of J2000 reference frame (km)
+
+    Returns:
+        lat (float): The latitude associated with the 3 input arguments
+    """
+    lat = math.degrees(math.atan2(z, math.sqrt(x**2 + y**2)))
+    return lat;
+
+def altitude(x: float,y: float,z: float) -> float:
+    """
+    Converts X, Y, and Z coordinates into the appropriate Altitude in kilometers
+
+    Args:
+        x (float): X-Coordinate in Mean of J2000 reference frame (km)
+        y (float): Y-Coordinate in Mean of J2000 reference frame (km)
+        z (float): Z-Coordinate in Mean of J2000 reference frame (km)
+
+    Returns:
+        alt (float): The altitude associated with the 3 input arguments
+    """
+    alt = math.sqrt(x**2 + y**2 + z**2) - 6371.0088
+    return alt;
+
+def longitude(x: float, y: float, z: float, time: str) -> float:
+    """
+    Converts Time + X, Y, and Z coordinates into the appropriate Latitude
+
+    Args:
+        x (float): X-Coordinate in Mean of J2000 reference frame (km)
+        y (float): Y-Coordinate in Mean of J2000 reference frame (km)
+        z (float): Z-Coordinate in Mean of J2000 reference frame (km)
+        time (string): time in ISO 8601 format, Mean of J2000
+        
+    Returns:
+        lon (float): The longitude associated with the 4 input arguments
+    """
+    timeobj=datetime.strptime(time, "%Y-%jT%H:%M:%S.%fZ")
+    hrs = timeobj.hour
+    mins = timeobj.minute
+    lon = math.degrees(math.atan2(y, x)) - ((hrs-12)+(mins/60))*(360/24) + 19
+    return lon;
+
+def get_location(lat: float, lon: float) -> str:
+    """
+    Converts latitude and longitude values to a geolocation string using the Nominatim geolocator
+
+    Args:
+        lat (float): Latitude of the position in question
+        lon (float): Longitude of the position in question
+
+    Returns:
+        address_string (String): The geolocation of these coordinates, or "Location not found" if said coordinates are over an area
+        such as the ocean
+    """
+    geolocator = Nominatim(user_agent="iss_tracker.py")
+    location = (lat,lon)
+    try:
+        location_info = geolocator.reverse(location, language='en')
+        address_string = location_info.address if location_info else "Location not found"
+        return address_string
+    except Exception as e:
+        logging.critical(f"Error: {e}")
+    return None
+
+@app.route('/comment', methods=['GET'])
+def comment():
+    response = requests.get(url='https://nasa-public-data.s3.amazonaws.com/iss-coords/current/ISS_OEM/ISS.OEM_J2K_EPH.xml')
+    code = response.status_code;
+    if code==200:
+        data = xmltodict.parse(response.text)
+    else:
+        logging.critical(f'FAILURE TO GET DATA FROM https - error code {code}')
+    return data['ndm']['oem']['body']['segment']['data']['COMMENT']
+
+@app.route('/header', methods=['GET'])
+def header():
+    response = requests.get(url='https://nasa-public-data.s3.amazonaws.com/iss-coords/current/ISS_OEM/ISS.OEM_J2K_EPH.xml')
+    code = response.status_code;
+    if code==200:
+        data = xmltodict.parse(response.text)
+    else:
+        logging.critical(f'FAILURE TO GET DATA FROM https - error code {code}')
+    return data['ndm']['oem']['header']
+
+@app.route('/metadata', methods=['GET'])
+def metadata():
+    response = requests.get(url='https://nasa-public-data.s3.amazonaws.com/iss-coords/current/ISS_OEM/ISS.OEM_J2K_EPH.xml')
+    code = response.status_code;
+    if code==200:
+        data = xmltodict.parse(response.text)
+    else:
+        logging.critical(f'FAILURE TO GET DATA FROM https - error code {code}')
+    return data['ndm']['oem']['body']['segment']['metadata']
 
 @app.route('/epochs', methods=['GET'])
 def epochs():
@@ -83,6 +184,12 @@ def specific_epoch(epoch):
         data = xmltodict.parse(response.text)
     else:
         logging.critical(f'FAILURE TO GET DATA FROM https - error code {code}')
+    if not epoch.isnumeric():
+        return "Error: epoch must be an integer\n"
+    try:
+        dataImportant = data['ndm']['oem']['body']['segment']['data']['stateVector'][epoch]
+    except IndexError:
+        logging.critical(f'Error: Index {index} is out of bounds for the list of epochs.')
     dataImportant = data['ndm']['oem']['body']['segment']['data']['stateVector']
     dataToReturn = dataImportant[epoch]
     return dataToReturn;
@@ -95,13 +202,21 @@ def specific_epoch_speed(epoch):
         data = xmltodict.parse(response.text)
     else:
         logging.critical(f'FAILURE TO GET DATA FROM https - error code {code}')
-    dataImportant = data['ndm']['oem']['body']['segment']['data']['stateVector'][epoch]
+    if not epoch.isnumeric():
+        return "Error: epoch must be an integer\n"
+    try:
+        dataImportant = data['ndm']['oem']['body']['segment']['data']['stateVector'][epoch]
+    except IndexError:
+        logging.critical(f'Error: Index {index} is out of bounds for the list of epochs.')
     xSpeedSquared = float(dataImportant['X_DOT']['#text'])**2
     ySpeedSquared = float(dataImportant['Y_DOT']['#text'])**2
     zSpeedSquared = float(dataImportant['Z_DOT']['#text'])**2
     dataToReturn = str((xSpeedSquared + ySpeedSquared + zSpeedSquared)**0.5)
     StringToReturn = f"Speed at this instance: {dataToReturn}"
     return StringToReturn;
+
+@app.route('/epochs/<int:epoch>/location', methods=['GET'])
+    
 
 @app.route('/now', methods=['GET'])
 def get_current():
