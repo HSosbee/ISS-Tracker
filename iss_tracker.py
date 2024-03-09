@@ -124,6 +124,26 @@ def get_location(lat: float, lon: float) -> str:
         logging.critical(f"Error: {e}")
     return None
 
+def location_string(inputDict: dict) -> str:
+    """
+    Returns a descriptive string of a given epoch
+
+    Args:
+        inputDict (Dict): A specific epoch from the NASA provided list
+
+    Returns:
+        lcoationString (String): A string containing the latitude, longitude, altitude, and location of the given epoch
+    """
+    x = dataImportant['X']['#text']
+    y = dataImportant['Y']['#text']
+    z = dataImportant['Z']['#text']
+    lat = latitude(x, y, z)
+    alt = altitude(x, y, z)
+    lon = longitude(x, y, z, dataImportant['EPOCH'])
+    location = get_location(lat,lon)
+    locationString = f"Latitude: {lat}\nLongitude: {lon}\nAltitude: {alt}\nGeolocation: {location}"
+    return locationString
+
 @app.route('/comment', methods=['GET'])
 def comment():
     response = requests.get(url='https://nasa-public-data.s3.amazonaws.com/iss-coords/current/ISS_OEM/ISS.OEM_J2K_EPH.xml')
@@ -216,7 +236,22 @@ def specific_epoch_speed(epoch):
     return StringToReturn;
 
 @app.route('/epochs/<int:epoch>/location', methods=['GET'])
-    
+def specific_location(epoch):
+    response = requests.get(url='https://nasa-public-data.s3.amazonaws.com/iss-coords/current/ISS_OEM/ISS.OEM_J2K_EPH.xml')
+    code = response.status_code;
+    if code==200:
+        data = xmltodict.parse(response.text)
+    else:
+        logging.critical(f'FAILURE TO GET DATA FROM https - error code {code}')
+    if not epoch.isnumeric():
+        return "Error: epoch must be an integer\n"
+    try:
+        dataImportant = data['ndm']['oem']['body']['segment']['data']['stateVector'][epoch]
+    except IndexError:
+        logging.critical(f'Error: Index {index} is out of bounds for the list of epochs.')
+    locationString = location_string(dataImportant)
+    return locationString
+
 
 @app.route('/now', methods=['GET'])
 def get_current():
@@ -228,13 +263,16 @@ def get_current():
         logging.critical(f'FAILURE TO GET DATA FROM https - error code {code}')
     dataImportant = data['ndm']['oem']['body']['segment']['data']['stateVector']
     closestData = dataImportant[find_closest_time_index(dataImportant,'EPOCH')]
+    """ The following commented out section is an outdated functionality for this method
     xSpeed = float(closestData['X_DOT']['#text'])
     ySpeed = float(closestData['Y_DOT']['#text'])
     zSpeed = float(closestData['Z_DOT']['#text'])
     dataToReturn = str((xSpeed**2 + ySpeed**2 + zSpeed**2)**0.5)
     StringToReturn = f"Speed at this instance: {dataToReturn}\nX Velocity: {xSpeed}\nY Velocity: {ySpeed}\nZ Velocity: {zSpeed}"
     return StringToReturn;
-    
+    """
+    locationString = location_string(closestData)
+    return locationString
 
 
 def main():
